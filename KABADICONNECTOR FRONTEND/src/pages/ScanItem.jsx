@@ -6,7 +6,7 @@ import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { scanMaterial } from "../services/estimateService";
 import { useApp } from "../context/AppContext";
-import { MdCameraAlt, MdCloudUpload, MdCheckCircle, MdArrowForward } from "react-icons/md";
+import { MdCameraAlt, MdCloudUpload, MdCheckCircle, MdAdd } from "react-icons/md";
 import { formatCurrency } from "../utils/helpers";
 
 export const ScanItem = () => {
@@ -147,14 +147,28 @@ export const ScanItem = () => {
               💡 {scanResult.detectedMaterial.shortDescription}
             </p>
 
+            {scanResult.predictions?.length > 1 && (
+              <div className="mt-3 space-y-1.5">
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
+                  Other possible matches
+                </p>
+                {scanResult.predictions.slice(1).map((prediction) => (
+                  <div key={prediction.label} className="flex justify-between text-xs text-gray-600">
+                    <span>{prediction.label}</span>
+                    <span className="font-bold">{prediction.confidence}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <Button
               onClick={handleProceedToValue}
               variant="primary"
               size="lg"
               className="mt-4"
-              icon={MdArrowForward}
+              icon={MdAdd}
             >
-              Calculate Total Value
+              Add Item & Calculate Value
             </Button>
           </Card>
         )}
