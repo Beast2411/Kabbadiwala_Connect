@@ -8,12 +8,12 @@ import { StatusBadge } from "../components/StatusBadge";
 import { useApp } from "../context/AppContext";
 import { mockRecyclers } from "../data/mockData";
 import { formatDistance } from "../utils/helpers";
-import { FaStar, FaMapMarkerAlt, FaPhoneAlt, FaDirections, FaClock, FaCheck, FaTruck } from "react-icons/fa";
+import { FaStar, FaMapMarkerAlt, FaPhoneAlt, FaDirections, FaClock, FaCheck, FaTruck, FaQrcode } from "react-icons/fa";
 
 export const RecyclerDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { selectedRecycler, t } = useApp();
+  const { selectedRecycler, activeLot, t } = useApp();
 
   const recycler = selectedRecycler || mockRecyclers.find((r) => r.id === id) || mockRecyclers[0];
 
@@ -80,6 +80,17 @@ export const RecyclerDetails = () => {
             {t("navigate") || "Get Directions"}
           </Button>
         </div>
+
+        <Button
+          variant="primary"
+          size="lg"
+          disabled={!activeLot}
+          onClick={() => navigate("/handover", { state: { lot: activeLot, recycler } })}
+          icon={FaQrcode}
+          className="w-full"
+        >
+          {activeLot ? "Start Verified Sale" : "Create a Lot to Sell"}
+        </Button>
 
         {/* Address & Working Hours Card */}
         <Card className="p-5 space-y-4">

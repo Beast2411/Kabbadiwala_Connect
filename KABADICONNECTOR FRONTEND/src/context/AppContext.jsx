@@ -18,6 +18,13 @@ export const AppProvider = ({ children }) => {
   const [activeWeight, setActiveWeight] = useState(1);
   const [selectedRecycler, setSelectedRecycler] = useState(null);
   const [activeLot, setActiveLot] = useState(null);
+  const [bagItems, setBagItems] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("kabadi_bag") || "[]");
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     if (user?.preferredLanguage) {
@@ -56,6 +63,34 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem("kabadi_bag", JSON.stringify(bagItems));
+  }, [bagItems]);
+
+  const addToBag = (item, imagePreview = null) => {
+    setBagItems((current) => [
+      ...current,
+      {
+        ...item,
+        bagId: `bag_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        weightKg: Number(item.weightKg || 1),
+        imagePreview
+      }
+    ]);
+  };
+
+  const updateBagItem = (bagId, updates) => {
+    setBagItems((current) =>
+      current.map((item) => (item.bagId === bagId ? { ...item, ...updates } : item))
+    );
+  };
+
+  const removeFromBag = (bagId) => {
+    setBagItems((current) => current.filter((item) => item.bagId !== bagId));
+  };
+
+  const clearBag = () => setBagItems([]);
+
   return (
     <AppContext.Provider
       value={{
@@ -73,7 +108,12 @@ export const AppProvider = ({ children }) => {
         selectedRecycler,
         setSelectedRecycler,
         activeLot,
-        setActiveLot
+        setActiveLot,
+        bagItems,
+        addToBag,
+        updateBagItem,
+        removeFromBag,
+        clearBag
       }}
     >
       {children}

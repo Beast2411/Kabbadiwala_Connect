@@ -1,13 +1,13 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronLeft, FaGlobe } from "react-icons/fa";
+import { FaChevronLeft, FaGlobe, FaShoppingBag } from "react-icons/fa";
 import { useApp } from "../context/AppContext";
 import { LANGUAGES } from "../utils/constants";
 
 export const Navbar = ({ title = null, showBack = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { language, changeLanguage } = useApp();
+  const { language, changeLanguage, bagItems } = useApp();
 
   const isHome = location.pathname === "/dashboard" || location.pathname === "/";
   const currentLangObj = LANGUAGES.find((l) => l.id === language) || LANGUAGES[0];
@@ -48,14 +48,20 @@ export const Navbar = ({ title = null, showBack = true }) => {
         </div>
 
         {/* Quick Language Toggle Pill */}
-        <button
-          onClick={cycleLanguage}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium text-xs hover:bg-emerald-100 transition-all active:scale-95"
-          title="Change language"
-        >
-          <FaGlobe className="text-emerald-600 text-xs" />
-          <span className="font-semibold">{currentLangObj.nativeName}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/bag")} className="relative p-2 rounded-xl bg-emerald-50 text-emerald-700" title="Open scrap bag">
+            <FaShoppingBag />
+            {bagItems?.length > 0 && <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold flex items-center justify-center">{bagItems.length}</span>}
+          </button>
+          <button
+            onClick={cycleLanguage}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium text-xs hover:bg-emerald-100 transition-all active:scale-95"
+            title="Change language"
+          >
+            <FaGlobe className="text-emerald-600 text-xs" />
+            <span className="font-semibold">{currentLangObj.nativeName}</span>
+          </button>
+        </div>
       </div>
     </header>
   );

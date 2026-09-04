@@ -21,6 +21,10 @@ import { NotFound } from "../pages/NotFound";
 import { BuyerLogin } from "../pages/BuyerLogin";
 import { BuyerRegister } from "../pages/BuyerRegister";
 import { BuyerDashboard } from "../pages/BuyerDashboard";
+import { Bag } from "../pages/Bag";
+import { Handover } from "../pages/Handover";
+import { Payment } from "../pages/Payment";
+import { Certificate } from "../pages/Certificate";
 
 const PageWrapper = ({ children }) => (
   <motion.div
@@ -61,6 +65,7 @@ export const AppRoutes = () => {
         <Route path="/language-selection" element={<CollectorRoute><LanguageSelection /></CollectorRoute>} />
         <Route path="/dashboard" element={<CollectorRoute><Dashboard /></CollectorRoute>} />
         <Route path="/scan" element={<CollectorRoute><ScanItem /></CollectorRoute>} />
+        <Route path="/bag" element={<CollectorRoute><Bag /></CollectorRoute>} />
         <Route path="/estimated-value" element={<CollectorRoute><EstimatedValue /></CollectorRoute>} />
         <Route path="/recyclers" element={<CollectorRoute><NearbyRecyclers /></CollectorRoute>} />
         <Route path="/recycler/:id" element={<CollectorRoute><RecyclerDetails /></CollectorRoute>} />
@@ -68,6 +73,9 @@ export const AppRoutes = () => {
         <Route path="/earnings" element={<CollectorRoute><Earnings /></CollectorRoute>} />
         <Route path="/safety" element={<CollectorRoute><SafetyGuide /></CollectorRoute>} />
         <Route path="/profile" element={<CollectorRoute><Profile /></CollectorRoute>} />
+        <Route path="/handover" element={<CollectorRoute><Handover /></CollectorRoute>} />
+        <Route path="/payment" element={<CollectorRoute><Payment /></CollectorRoute>} />
+        <Route path="/certificate" element={<CollectorRoute><Certificate /></CollectorRoute>} />
 
         {/* Buyer / Recycler portal */}
         <Route path="/buyer/login" element={<PageWrapper><BuyerLogin /></PageWrapper>} />

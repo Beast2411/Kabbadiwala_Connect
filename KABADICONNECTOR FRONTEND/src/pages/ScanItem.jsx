@@ -7,15 +7,17 @@ import { Button } from "../components/Button";
 import { scanMaterial } from "../services/estimateService";
 import { useApp } from "../context/AppContext";
 import { MdCameraAlt, MdCloudUpload, MdCheckCircle, MdAdd } from "react-icons/md";
+import { FaShoppingBag } from "react-icons/fa";
 import { formatCurrency } from "../utils/helpers";
 
 export const ScanItem = () => {
   const navigate = useNavigate();
-  const { setActiveItem, t } = useApp();
+  const { setActiveItem, addToBag, bagItems, t } = useApp();
 
   const [imagePreview, setImagePreview] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+  const [addedToBag, setAddedToBag] = useState(false);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -23,7 +25,8 @@ export const ScanItem = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setScanResult(null);
+      setScanResult(null);
+      setAddedToBag(false);
       };
       reader.readAsDataURL(file);
     }
@@ -51,6 +54,11 @@ export const ScanItem = () => {
         }
       });
     }
+  };
+
+  const handleAddToBag = () => {
+    addToBag(scanResult.detectedMaterial, imagePreview);
+    setAddedToBag(true);
   };
 
   return (
@@ -161,14 +169,16 @@ export const ScanItem = () => {
               </div>
             )}
 
-            <Button
-              onClick={handleProceedToValue}
-              variant="primary"
-              size="lg"
-              className="mt-4"
-              icon={MdAdd}
-            >
-              Add Item & Calculate Value
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <Button onClick={handleAddToBag} variant="secondary" size="md" icon={FaShoppingBag}>
+                {addedToBag ? "Added to Bag" : "Add to Bag"}
+              </Button>
+              <Button onClick={handleProceedToValue} variant="primary" size="md" icon={MdAdd}>
+                Sell This Item
+              </Button>
+            </div>
+            <Button onClick={() => navigate("/bag")} variant="ghost" size="sm" className="w-full mt-2">
+              View Bag ({bagItems.length})
             </Button>
           </Card>
         )}

@@ -178,3 +178,17 @@ export const createTraceabilityRecord = async ({
   if (error) throw new Error(error.message);
   return data;
 };
+
+export const updateTraceabilityStatus = async (lotId, status) => {
+  if (!isSupabaseConfigured) return null;
+
+  const { data, error } = await supabase
+    .from("traceability")
+    .update({ status, recycler_confirmed: status === "paid" })
+    .eq("lot_id", lotId)
+    .select()
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+};
