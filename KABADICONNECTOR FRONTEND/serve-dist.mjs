@@ -55,7 +55,8 @@ async function resolveAsset(urlPath) {
   return null;
 }
 
-const host = process.env.HOST || "127.0.0.1";
+// Render and other container hosts need the server reachable outside localhost.
+const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT || 3000);
 
 const server = http.createServer(async (req, res) => {
