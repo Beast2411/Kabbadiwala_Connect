@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
@@ -27,8 +27,8 @@ export const Login = () => {
 
     setLoading(true);
     try {
-      await sendOTP(phone);
-      navigate("/otp", { state: { phone } });
+      const res = await sendOTP(phone);
+      navigate("/otp", { state: { phone, demoPin: res.demoPin } });
     } catch (err) {
       setError(err.message || "Failed to send OTP. Please try again.");
     } finally {
@@ -100,9 +100,22 @@ export const Login = () => {
         </Card>
       </div>
 
-      {/* Footer helper */}
-      <div className="py-6 text-center text-xs text-gray-500 font-medium">
-        By continuing, you agree to Kabadiwala Connect Terms & Safety Protocols.
+      <div className="py-4 text-center space-y-2">
+        <p className="text-sm text-gray-600">
+          New collector?{" "}
+          <Link to="/signup" className="font-bold text-emerald-700 hover:underline">
+            Create account
+          </Link>
+        </p>
+        <p className="text-sm text-gray-500">
+          Scrap buyer?{" "}
+          <Link to="/buyer/login" className="font-bold text-emerald-700 hover:underline">
+            Buyer portal
+          </Link>
+        </p>
+        <p className="text-xs text-gray-400 font-medium pt-2">
+          By continuing, you agree to Kabadiwala Connect Terms & Safety Protocols.
+        </p>
       </div>
     </div>
   );

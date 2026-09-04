@@ -3,7 +3,31 @@ import { motion } from "framer-motion";
 import { FaCheckCircle } from "react-icons/fa";
 import { LANGUAGES } from "../utils/constants";
 
-export const LanguageSelector = ({ selectedLanguage, onSelect }) => {
+export const LanguageSelector = ({ selectedLanguage, onSelect, compact = false }) => {
+  if (compact) {
+    return (
+      <div className="flex gap-2 flex-wrap">
+        {LANGUAGES.map((lang) => {
+          const isSelected = selectedLanguage === lang.id;
+          return (
+            <button
+              key={lang.id}
+              type="button"
+              onClick={() => onSelect(lang.id)}
+              className={`px-3 py-2 rounded-full text-xs font-bold transition-all ${
+                isSelected
+                  ? "bg-emerald-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {lang.icon} {lang.nativeName}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 w-full">
       {LANGUAGES.map((lang) => {

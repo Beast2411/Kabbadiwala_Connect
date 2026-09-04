@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { OTPInput } from "../components/OTPInput";
-import { verifyOTP, resendOTP } from "../services/authService";
+import { verifyOTP, resendOTP, getDemoPin } from "../services/authService";
 import { useApp } from "../context/AppContext";
 import { OTP_EXPIRY_SECONDS, DEFAULT_COUNTRY_CODE } from "../utils/constants";
 import { FaCheckCircle } from "react-icons/fa";
@@ -15,6 +15,10 @@ export const OTPVerification = () => {
   const { setUser, t } = useApp();
 
   const phone = location.state?.phone || "9876543210";
+  const [demoPin, setDemoPin] = useState(
+    location.state?.demoPin || getDemoPin()
+  );
+  const isNewUser = location.state?.isNewUser;
   const [otpCode, setOtpCode] = useState("");
   const [timer, setTimer] = useState(OTP_EXPIRY_SECONDS);
   const [error, setError] = useState("");
@@ -37,9 +41,9 @@ export const OTPVerification = () => {
 
     setLoading(true);
     try {
-      const res = await verifyOTP(otpCode);
+      const res = await verifyOTP(otpCode, phone);
       setUser(res.user);
-      navigate("/language-selection");
+      navigate(isNewUser ? "/dashboard" : "/dashboard");
     } catch (err) {
       setError(err.message || "Invalid OTP code");
     } finally {
@@ -48,9 +52,15 @@ export const OTPVerification = () => {
   };
 
   const handleResend = async () => {
-    setTimer(OTP_EXPIRY_SECONDS);
     setError("");
-    await resendOTP(phone);
+    try {
+      const res = await resendOTP(phone);
+      setDemoPin(res.demoPin || getDemoPin());
+      setTimer(OTP_EXPIRY_SECONDS);
+      setOtpCode("");
+    } catch (err) {
+      setError(err.message || "Could not resend the verification code");
+    }
   };
 
   return (
@@ -113,8 +123,18 @@ export const OTPVerification = () => {
         </Card>
       </div>
 
-      <div className="py-6 text-center text-xs text-gray-500 font-medium">
-        Demo Tip: You can type any 6 digits (e.g. <span className="font-bold">123456</span>) to verify.
+      <div className="py-6 text-center text-xs text-gray-500 font-medium space-y-1">
+        {demoPin ? (
+          <p className="rounded-xl bg-emerald-50 px-4 py-3 text-emerald-800">
+            Demo mode: enter this verification code{" "}
+            <span className="font-extrabold tracking-widest">{demoPin}</span>
+            <span className="block text-[11px] font-medium text-emerald-700 mt-1">
+              No SMS provider is configured yet.
+            </span>
+          </p>
+        ) : (
+          <p>Enter the 6-digit code sent to your phone.</p>
+        )}
       </div>
     </div>
   );

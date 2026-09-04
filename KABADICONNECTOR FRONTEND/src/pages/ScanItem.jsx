@@ -44,7 +44,12 @@ export const ScanItem = () => {
 
   const handleProceedToValue = () => {
     if (scanResult) {
-      navigate("/estimated-value");
+      navigate("/estimated-value", {
+        state: {
+          scanResult,
+          imagePreview
+        }
+      });
     }
   };
 
