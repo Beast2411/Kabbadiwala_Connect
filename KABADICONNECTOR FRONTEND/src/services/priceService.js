@@ -48,27 +48,48 @@ const buildMaterialFromPrice = (category, latestPrice, prevPrice) => {
 };
 
 export const getPriceBoard = async (location = "Mumbai") => {
-  if (!isSupabaseConfigured) return mockMaterials;
+  const baseMaterials = [...mockMaterials];
+  if (!isSupabaseConfigured) return baseMaterials;
 
-  const { data: prices, error } = await supabase
-    .from("prices")
-    .select("*")
-    .eq("location", location)
-    .order("price_date", { ascending: false });
+  try {
+    const { data: prices, error } = await supabase
+      .from("prices")
+      .select("*")
+      .eq("location", location)
+      .order("price_date", { ascending: false });
 
-  if (error) throw new Error(error.message);
+    if (error || !prices || prices.length === 0) return baseMaterials;
 
-  const byCategory = {};
-  for (const row of prices || []) {
-    if (!byCategory[row.material_category]) {
-      byCategory[row.material_category] = [];
+    const latestPriceMap = {};
+    for (const row of prices) {
+      if (!latestPriceMap[row.material_category]) {
+        latestPriceMap[row.material_category] = row;
+      }
     }
-    byCategory[row.material_category].push(row);
-  }
 
-  return Object.entries(byCategory).map(([category, rows]) =>
-    buildMaterialFromPrice(category, rows[0], rows[1])
-  );
+    return baseMaterials.map((mat) => {
+      const match =
+        latestPriceMap[mat.id] ||
+        latestPriceMap[mat.name] ||
+        latestPriceMap[mat.dbCategory] ||
+        (mat.id?.includes("pcb") ? latestPriceMap["PCB"] : null) ||
+        (mat.id?.includes("battery") ? latestPriceMap["batteries"] : null) ||
+        (mat.id?.includes("television") ? latestPriceMap["LCD"] : null) ||
+        (mat.id?.includes("copper") ? latestPriceMap["cables"] : null) ||
+        (mat.id?.includes("plastic") ? latestPriceMap["mixed_plastic"] : null);
+
+      if (match) {
+        return {
+          ...mat,
+          pricePerKg: Math.round(Number(match.quoted_price || match.buying_price || mat.pricePerKg)),
+          unit: match.unit || mat.unit
+        };
+      }
+      return mat;
+    });
+  } catch {
+    return baseMaterials;
+  }
 };
 
 export const getMaterialByCategory = async (category) => {

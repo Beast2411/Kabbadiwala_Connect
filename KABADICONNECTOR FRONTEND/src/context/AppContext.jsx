@@ -67,13 +67,14 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("kabadi_bag", JSON.stringify(bagItems));
   }, [bagItems]);
 
-  const addToBag = (item, imagePreview = null) => {
+  const addToBag = (item, imagePreview = null, chosenWeight = null) => {
+    const weightVal = Number(chosenWeight ?? item.weightKg ?? 1);
     setBagItems((current) => [
       ...current,
       {
         ...item,
         bagId: `bag_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        weightKg: Number(item.weightKg || 1),
+        weightKg: Number(weightVal.toFixed(2)),
         imagePreview
       }
     ]);

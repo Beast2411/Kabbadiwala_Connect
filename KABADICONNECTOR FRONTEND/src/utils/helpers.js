@@ -2,7 +2,10 @@
 
 export const formatCurrency = (amount) => {
   const num = Number(amount) || 0;
-  return `₹${num.toLocaleString("en-IN")}`;
+  return `₹${num.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
 };
 
 export const formatDistance = (km) => {
@@ -15,7 +18,7 @@ export const formatDistance = (km) => {
 
 export const formatWeight = (kg) => {
   const weight = Number(kg) || 0;
-  return `${weight} kg`;
+  return `${weight.toFixed(2)} kg`;
 };
 
 export const validatePhoneNumber = (phone) => {
@@ -26,7 +29,7 @@ export const validatePhoneNumber = (phone) => {
 export const calculateTotalValue = (pricePerKg, weightKg) => {
   const price = Number(pricePerKg) || 0;
   const weight = Number(weightKg) || 0;
-  return Math.round(price * weight);
+  return Number((price * weight).toFixed(2));
 };
 
 export const simulateDelay = (ms = 600) => {
@@ -80,14 +83,23 @@ export const mapDbCategoryToFrontend = (dbCategory) => {
     PCB: "e_waste",
     LCD: "e_waste",
     CRT: "e_waste",
+    Keyboard: "e_waste",
+    Microwave: "e_waste",
+    Mobile: "e_waste",
+    Mouse: "e_waste",
+    Player: "e_waste",
+    Printer: "e_waste",
+    Television: "e_waste",
+    "Washing Machine": "e_waste",
     cables: "metal",
     metal: "metal",
-    batteries: "hazardous",
+    batteries: "e_waste",
+    Battery: "e_waste",
     motors: "hazardous",
     mixed_plastic: "plastic",
     paper: "paper"
   };
-  return map[dbCategory] || "metal";
+  return map[dbCategory] || "e_waste";
 };
 
 export const mapFrontendMaterialToDbCategory = (material) => {
@@ -95,19 +107,35 @@ export const mapFrontendMaterialToDbCategory = (material) => {
 
   if (material?.dbCategory) return material.dbCategory;
   if (name.includes("pcb") || name.includes("circuit")) return "PCB";
-  if (name.includes("copper") || name.includes("wire") || name.includes("cable")) return "cables";
+  if (name.includes("keyboard")) return "Keyboard";
+  if (name.includes("microwave")) return "Microwave";
+  if (name.includes("mobile") || name.includes("phone")) return "Mobile";
+  if (name.includes("mouse")) return "Mouse";
+  if (name.includes("player") || name.includes("dvd")) return "Player";
+  if (name.includes("printer") || name.includes("scanner")) return "Printer";
+  if (name.includes("television") || name.includes("tv") || name.includes("lcd") || name.includes("led") || name.includes("screen")) return "Television";
+  if (name.includes("washing")) return "Washing Machine";
   if (name.includes("battery")) return "batteries";
+  if (name.includes("copper") || name.includes("wire") || name.includes("cable")) return "cables";
   if (name.includes("motor") || name.includes("transformer")) return "motors";
   if (name.includes("plastic")) return "mixed_plastic";
-  if (name.includes("lcd") || name.includes("led") || name.includes("screen")) return "LCD";
   if (name.includes("cardboard") || name.includes("paper")) return "paper";
-  return "metal";
+  return "e_waste";
 };
 
 export const MATERIAL_ICONS = {
   PCB: "💻",
-  cables: "🔌",
+  Keyboard: "⌨️",
+  Microwave: "📦",
+  Mobile: "📱",
+  Mouse: "🖱️",
+  Player: "📻",
+  Printer: "🖨️",
+  Television: "📺",
+  "Washing Machine": "⚙️",
   batteries: "🔋",
+  Battery: "🔋",
+  cables: "🔌",
   CRT: "📺",
   motors: "⚙️",
   mixed_plastic: "🍾",
@@ -115,3 +143,4 @@ export const MATERIAL_ICONS = {
   paper: "📦",
   metal: "⚡"
 };
+

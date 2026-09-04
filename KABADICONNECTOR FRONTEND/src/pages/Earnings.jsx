@@ -104,7 +104,7 @@ export const Earnings = () => {
                       <span className="text-3xl">{tx.icon}</span>
                       <div>
                         <h4 className="font-extrabold text-gray-900 text-sm">
-                          {tx.materialName} ({tx.weightKg} kg)
+                          {tx.materialName} ({Number(tx.weightKg || 0).toFixed(2)} kg)
                         </h4>
                         <p className="text-xs text-gray-500 font-medium">
                           {tx.recyclerName} • {tx.date}

@@ -6,10 +6,17 @@ import { Button } from "./Button";
 import { FaStar, FaMapMarkerAlt, FaPhoneAlt, FaDirections } from "react-icons/fa";
 import { formatDistance } from "../utils/helpers";
 import { useApp } from "../context/AppContext";
+import { getRecyclerRatingStats } from "../services/reviewService";
 
 export const RecyclerCard = ({ recycler }) => {
   const navigate = useNavigate();
   const { setSelectedRecycler, t } = useApp();
+
+  const stats = getRecyclerRatingStats(
+    recycler.id,
+    recycler.rating || 4.7,
+    recycler.reviewsCount || 40
+  );
 
   const handleSelect = () => {
     setSelectedRecycler(recycler);
@@ -41,7 +48,7 @@ export const RecyclerCard = ({ recycler }) => {
 
         <div className="flex items-center bg-amber-50 border border-amber-200 px-2 py-1 rounded-xl shrink-0">
           <FaStar className="text-amber-500 text-xs mr-1" />
-          <span className="text-xs font-extrabold text-amber-900">{recycler.rating}</span>
+          <span className="text-xs font-extrabold text-amber-900">{stats.averageRating}</span>
         </div>
       </div>
 

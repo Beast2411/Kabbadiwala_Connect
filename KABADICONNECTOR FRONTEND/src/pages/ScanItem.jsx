@@ -6,9 +6,9 @@ import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { scanMaterial } from "../services/estimateService";
 import { useApp } from "../context/AppContext";
-import { MdCameraAlt, MdCloudUpload, MdCheckCircle, MdAdd } from "react-icons/md";
-import { FaShoppingBag } from "react-icons/fa";
-import { formatCurrency } from "../utils/helpers";
+import { MdCameraAlt, MdCloudUpload, MdCheckCircle, MdAdd, MdRefresh } from "react-icons/md";
+import { FaShoppingBag, FaMinus, FaPlus } from "react-icons/fa";
+import { formatCurrency, calculateTotalValue } from "../utils/helpers";
 
 export const ScanItem = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ export const ScanItem = () => {
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [addedToBag, setAddedToBag] = useState(false);
+  const [weightKg, setWeightKg] = useState(1.0);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -25,8 +26,8 @@ export const ScanItem = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-      setScanResult(null);
-      setAddedToBag(false);
+        setScanResult(null);
+        setAddedToBag(false);
       };
       reader.readAsDataURL(file);
     }
@@ -38,6 +39,7 @@ export const ScanItem = () => {
       const res = await scanMaterial(imagePreview);
       setScanResult(res);
       setActiveItem(res.detectedMaterial);
+      setAddedToBag(false);
     } catch (err) {
       console.error(err);
     } finally {
@@ -50,16 +52,23 @@ export const ScanItem = () => {
       navigate("/estimated-value", {
         state: {
           scanResult,
-          imagePreview
+          imagePreview,
+          initialWeight: weightKg
         }
       });
     }
   };
 
   const handleAddToBag = () => {
-    addToBag(scanResult.detectedMaterial, imagePreview);
+    if (!scanResult?.detectedMaterial) return;
+    addToBag(scanResult.detectedMaterial, imagePreview, weightKg);
     setAddedToBag(true);
+    setTimeout(() => setAddedToBag(false), 3000);
   };
+
+  const itemSubtotal = scanResult
+    ? calculateTotalValue(scanResult.detectedMaterial.pricePerKg, weightKg)
+    : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -80,8 +89,9 @@ export const ScanItem = () => {
               </div>
 
               <div className="flex gap-2">
-                <label className="flex-1 py-3 px-4 rounded-xl border border-gray-300 bg-white font-bold text-xs text-gray-700 cursor-pointer text-center hover:bg-gray-50">
-                  Retake Photo
+                <label className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                  <MdRefresh className="text-base" />
+                  <span>Retake Photo</span>
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 </label>
                 <Button
@@ -144,7 +154,7 @@ export const ScanItem = () => {
               </div>
 
               <div className="text-right">
-                <span className="text-sm font-bold text-gray-500">Market Rate</span>
+                <span className="text-xs font-bold text-gray-500">Market Rate</span>
                 <p className="text-xl font-extrabold text-emerald-700">
                   {formatCurrency(scanResult.detectedMaterial.pricePerKg)}/kg
                 </p>
@@ -154,6 +164,63 @@ export const ScanItem = () => {
             <p className="text-xs text-gray-600 font-medium mt-3 bg-white p-3 rounded-xl border border-emerald-100">
               💡 {scanResult.detectedMaterial.shortDescription}
             </p>
+
+            {/* Interactive Quantity / Weight Selection */}
+            <div className="mt-4 bg-white p-4 rounded-2xl border border-emerald-200 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600">
+                  Quantity / Weight (kg)
+                </label>
+                <span className="text-xs font-bold text-emerald-700">
+                  Subtotal: <span className="font-extrabold text-sm">{formatCurrency(itemSubtotal)}</span>
+                </span>
+              </div>
+
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setWeightKg((prev) => Math.max(0.1, Number((prev - 0.5).toFixed(2))))}
+                  className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold flex items-center justify-center transition-all active:scale-95"
+                >
+                  <FaMinus className="text-xs" />
+                </button>
+                <div className="flex items-baseline px-4 py-1.5 bg-emerald-50 rounded-xl border border-emerald-300">
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0.1"
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(Math.max(0.1, Number(Number(e.target.value).toFixed(2))))}
+                    className="w-20 text-center font-extrabold text-xl text-emerald-900 bg-transparent focus:outline-none"
+                  />
+                  <span className="text-xs font-bold text-emerald-700 ml-1">kg</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWeightKg((prev) => Number((prev + 0.5).toFixed(2)))}
+                  className="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold flex items-center justify-center transition-all active:scale-95"
+                >
+                  <FaPlus className="text-xs" />
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-1.5 pt-1">
+                {[0.5, 1.0, 2.0, 5.0, 10.0].map((quick) => (
+                  <button
+                    key={quick}
+                    type="button"
+                    onClick={() => setWeightKg(quick)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      weightKg === quick
+                        ? "bg-emerald-700 text-white shadow-xs"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {quick} kg
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {scanResult.predictions?.length > 1 && (
               <div className="mt-3 space-y-1.5">
@@ -170,15 +237,22 @@ export const ScanItem = () => {
             )}
 
             <div className="grid grid-cols-2 gap-2 mt-4">
-              <Button onClick={handleAddToBag} variant="secondary" size="md" icon={FaShoppingBag}>
-                {addedToBag ? "Added to Bag" : "Add to Bag"}
+              <Button
+                onClick={handleAddToBag}
+                variant={addedToBag ? "primary" : "secondary"}
+                size="md"
+                icon={FaShoppingBag}
+                className={addedToBag ? "bg-emerald-700 border-emerald-700" : ""}
+              >
+                {addedToBag ? `✓ Added ${weightKg.toFixed(2)}kg` : `Add ${weightKg.toFixed(2)}kg to Bag`}
               </Button>
               <Button onClick={handleProceedToValue} variant="primary" size="md" icon={MdAdd}>
                 Sell This Item
               </Button>
             </div>
+
             <Button onClick={() => navigate("/bag")} variant="ghost" size="sm" className="w-full mt-2">
-              View Bag ({bagItems.length})
+              View Bag ({bagItems.length} {bagItems.length === 1 ? "item" : "items"})
             </Button>
           </Card>
         )}

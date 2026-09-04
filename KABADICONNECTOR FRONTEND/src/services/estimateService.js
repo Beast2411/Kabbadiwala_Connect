@@ -11,7 +11,7 @@ const modelMaterials = {
   Battery: {
     id: "ai_battery",
     name: "Battery Scrap",
-    category: "hazardous",
+    category: "e_waste",
     pricePerKg: 95,
     unit: "kg",
     icon: "🔋",
@@ -41,7 +41,7 @@ const modelMaterials = {
   "Washing Machine": {
     id: "ai_washing_machine",
     name: "Washing Machine Scrap",
-    category: "metal",
+    category: "e_waste",
     pricePerKg: 190,
     unit: "kg",
     icon: "⚙️",
@@ -61,7 +61,7 @@ const modelMaterials = {
   Microwave: {
     id: "ai_microwave",
     name: "Microwave Scrap",
-    category: "metal",
+    category: "e_waste",
     pricePerKg: 80,
     unit: "kg",
     icon: "📦",

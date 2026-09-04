@@ -5,12 +5,13 @@ import { BottomNavigation } from "../components/BottomNavigation";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { useApp } from "../context/AppContext";
-import { calculateTotalValue, formatCurrency } from "../utils/helpers";
-import { FaMinus, FaPlus, FaTrash, FaShoppingBag } from "react-icons/fa";
+import { calculateTotalValue, formatCurrency, formatWeight } from "../utils/helpers";
+import { FaMinus, FaPlus, FaTrash, FaShoppingBag, FaArrowRight, FaCamera } from "react-icons/fa";
 
 export const Bag = () => {
   const navigate = useNavigate();
   const { bagItems, updateBagItem, removeFromBag, clearBag } = useApp();
+
   const totalWeight = bagItems.reduce((sum, item) => sum + Number(item.weightKg || 0), 0);
   const totalValue = bagItems.reduce(
     (sum, item) => sum + calculateTotalValue(item.pricePerKg, item.weightKg),
@@ -19,7 +20,7 @@ export const Bag = () => {
 
   const adjustWeight = (item, amount) => {
     updateBagItem(item.bagId, {
-      weightKg: Math.max(0.1, Number((Number(item.weightKg || 0) + amount).toFixed(1)))
+      weightKg: Math.max(0.1, Number((Number(item.weightKg || 0) + amount).toFixed(2)))
     });
   };
 
@@ -28,50 +29,139 @@ export const Bag = () => {
       <Navbar title="My Scrap Bag" />
       <main className="max-w-md mx-auto p-4 space-y-4">
         {bagItems.length === 0 ? (
-          <Card className="p-8 text-center">
-            <FaShoppingBag className="mx-auto text-4xl text-emerald-500 mb-3" />
-            <h2 className="font-extrabold text-gray-900 text-lg">Your bag is empty</h2>
-            <p className="text-sm text-gray-500 mt-1">Scan items and keep them here until you are ready to sell.</p>
-            <Button className="mt-5" onClick={() => navigate("/scan")}>Scan an Item</Button>
+          <Card className="p-8 text-center shadow-soft border-dashed border-2 border-gray-200">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+              <FaShoppingBag />
+            </div>
+            <h2 className="font-extrabold text-gray-900 text-lg">Your Scrap Bag is Empty</h2>
+            <p className="text-xs text-gray-500 max-w-xs mx-auto mt-1">
+              Add collected scrap items via AI Scan or the Live Price Board. Group them together for maximum payout!
+            </p>
+            <div className="flex gap-2 justify-center mt-5">
+              <Button size="md" onClick={() => navigate("/scan")} icon={FaCamera}>
+                Scan Scrap
+              </Button>
+              <Button size="md" variant="secondary" onClick={() => navigate("/prices")}>
+                View Price Board
+              </Button>
+            </div>
           </Card>
         ) : (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between px-1">
               <div>
-                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Saved for sale</p>
-                <h2 className="text-xl font-extrabold text-gray-900">{bagItems.length} item{bagItems.length === 1 ? "" : "s"}</h2>
+                <p className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider bg-emerald-100 px-2 py-0.5 rounded-full inline-block">
+                  Collected Items
+                </p>
+                <h2 className="text-xl font-extrabold text-gray-900 mt-1">
+                  {bagItems.length} {bagItems.length === 1 ? "Lot Item" : "Lot Items"}
+                </h2>
               </div>
-              <button onClick={clearBag} className="text-xs font-bold text-red-600">Clear bag</button>
+              <button
+                onClick={clearBag}
+                className="text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-xl transition-all"
+              >
+                Clear All
+              </button>
             </div>
 
-            {bagItems.map((item) => (
-              <Card key={item.bagId} className="p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-3xl">{item.icon || "📦"}</span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-extrabold text-gray-900">{item.name}</h3>
-                    <p className="text-xs text-emerald-700 font-bold">{formatCurrency(item.pricePerKg)}/kg</p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <button onClick={() => adjustWeight(item, -0.5)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center"><FaMinus className="text-xs" /></button>
-                      <span className="font-extrabold text-gray-900 min-w-16 text-center">{item.weightKg} kg</span>
-                      <button onClick={() => adjustWeight(item, 0.5)} className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><FaPlus className="text-xs" /></button>
-                      <button onClick={() => removeFromBag(item.bagId)} className="ml-auto text-red-500 p-2" aria-label={`Remove ${item.name}`}><FaTrash className="text-sm" /></button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
+            <div className="space-y-3">
+              {bagItems.map((item) => {
+                const subtotal = calculateTotalValue(item.pricePerKg, item.weightKg);
+                return (
+                  <Card key={item.bagId} className="p-4 shadow-sm border border-gray-200/80 hover:border-emerald-300 transition-all">
+                    <div className="flex items-start gap-3">
+                      {item.imagePreview ? (
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-black shrink-0 border border-gray-200">
+                          <img src={item.imagePreview} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-3xl shrink-0 border border-emerald-100">
+                          {item.icon || "📦"}
+                        </div>
+                      )}
 
-            <Card className="p-5 bg-emerald-gradient text-white">
-              <div className="flex justify-between text-sm font-bold"><span>Total weight</span><span>{totalWeight.toFixed(1)} kg</span></div>
-              <div className="flex justify-between text-xl font-extrabold mt-2"><span>Estimated value</span><span>{formatCurrency(totalValue)}</span></div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-extrabold text-gray-900 text-sm leading-tight">{item.name}</h3>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">
+                              Rate: <span className="font-bold text-emerald-700">{formatCurrency(item.pricePerKg)}</span> / kg
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-extrabold text-emerald-800">
+                              {formatCurrency(subtotal)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => adjustWeight(item, -0.5)}
+                              className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-all active:scale-95"
+                              title="Decrease 0.5kg"
+                            >
+                              <FaMinus className="text-[10px]" />
+                            </button>
+                            <span className="font-extrabold text-gray-900 min-w-16 text-center text-xs">
+                              {Number(item.weightKg).toFixed(2)} kg
+                            </span>
+                            <button
+                              onClick={() => adjustWeight(item, 0.5)}
+                              className="w-7 h-7 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 flex items-center justify-center transition-all active:scale-95"
+                              title="Increase 0.5kg"
+                            >
+                              <FaPlus className="text-[10px]" />
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => removeFromBag(item.bagId)}
+                            className="text-gray-400 hover:text-red-500 p-1.5 transition-colors"
+                            aria-label={`Remove ${item.name}`}
+                          >
+                            <FaTrash className="text-xs" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <Card className="p-5 bg-gradient-to-br from-emerald-800 to-teal-900 text-white shadow-soft">
+              <div className="flex justify-between items-center text-xs font-bold text-emerald-200">
+                <span>COMBINED WEIGHT</span>
+                <span className="text-sm text-white font-extrabold">{formatWeight(totalWeight)}</span>
+              </div>
+              <div className="flex justify-between items-baseline mt-3 pt-3 border-t border-emerald-700/60">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-100">Total Payout</span>
+                <span className="text-3xl font-extrabold tracking-tight text-white">
+                  {formatCurrency(totalValue)}
+                </span>
+              </div>
             </Card>
 
-            <Button size="lg" onClick={() => navigate("/estimated-value", { state: { bagItems } })}>
-              Sell This Bag Together
+            <Button
+              size="lg"
+              variant="primary"
+              onClick={() => navigate("/estimated-value", { state: { bagItems } })}
+              icon={FaArrowRight}
+              className="w-full shadow-md"
+            >
+              Sell Entire Bag ({formatCurrency(totalValue)})
             </Button>
-            <Button variant="secondary" size="lg" onClick={() => navigate("/scan")}>
-              Add More Items
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => navigate("/scan")}
+              icon={FaCamera}
+              className="w-full"
+            >
+              Scan & Add More Items
             </Button>
           </>
         )}

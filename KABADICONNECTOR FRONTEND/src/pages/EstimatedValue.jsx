@@ -24,19 +24,23 @@ export const EstimatedValue = () => {
   const imagePreview = scanState.imagePreview || null;
   const bagItems = scanState.bagItems || null;
   const currentMaterial = activeItem || scannedMaterial || mockMaterials[0];
-  const [weightKg, setWeightKg] = useState(5.0);
+  const [weightKg, setWeightKg] = useState(
+    scanState.initialWeight ? Number(Number(scanState.initialWeight).toFixed(2)) : 5.0
+  );
   const [saving, setSaving] = useState(false);
 
   const materialsToSell = bagItems?.length ? bagItems : [{ ...currentMaterial, weightKg }];
-  const totalWeight = bagItems?.length
-    ? bagItems.reduce((sum, item) => sum + Number(item.weightKg || 0), 0)
-    : weightKg;
+  const totalWeight = Number(
+    (bagItems?.length
+      ? bagItems.reduce((sum, item) => sum + Number(item.weightKg || 0), 0)
+      : weightKg).toFixed(2)
+  );
   const totalEstimate = bagItems?.length
     ? bagItems.reduce((sum, item) => sum + calculateTotalValue(item.pricePerKg, item.weightKg), 0)
     : calculateTotalValue(currentMaterial.pricePerKg, weightKg);
 
   const handleIncrement = (amount) => {
-    setWeightKg((prev) => Math.max(0.5, Number((prev + amount).toFixed(1))));
+    setWeightKg((prev) => Math.max(0.1, Number((prev + amount).toFixed(2))));
   };
 
   const handleFindBuyers = async () => {
@@ -128,7 +132,7 @@ export const EstimatedValue = () => {
             {bagItems?.length ? "Combined Bag Weight" : (t("weightInKg") || "Enter Scrap Weight (KG)")}
           </label>
           {bagItems?.length ? (
-            <p className="text-4xl font-extrabold text-emerald-900">{totalWeight.toFixed(1)} <span className="text-lg text-emerald-700">kg</span></p>
+            <p className="text-4xl font-extrabold text-emerald-900">{totalWeight.toFixed(2)} <span className="text-lg text-emerald-700">kg</span></p>
           ) : (
           <>
           <div className="flex items-center justify-center space-x-4 my-2">
@@ -141,7 +145,7 @@ export const EstimatedValue = () => {
                 step="0.5"
                 min="0.1"
                 value={weightKg}
-                onChange={(e) => setWeightKg(Math.max(0, Number(e.target.value)))}
+                onChange={(e) => setWeightKg(Math.max(0.1, Number(Number(e.target.value).toFixed(2))))}
                 className="w-24 text-center text-4xl font-extrabold text-emerald-900 bg-transparent focus:outline-none"
               />
               <span className="text-lg font-bold text-emerald-700">kg</span>
@@ -172,12 +176,12 @@ export const EstimatedValue = () => {
           <div className="text-5xl font-extrabold my-2 tracking-tight">{formatCurrency(totalEstimate)}</div>
           {!bagItems?.length && (
           <p className="text-xs text-emerald-100 font-medium">
-            {weightKg} kg × {formatCurrency(currentMaterial.pricePerKg)} — saved as lot on continue
+            {Number(weightKg).toFixed(2)} kg × {formatCurrency(currentMaterial.pricePerKg)} — saved as lot on continue
           </p>
           )}
           {bagItems?.length > 0 && (
             <p className="text-xs text-emerald-100 font-medium">
-              {totalWeight.toFixed(1)} kg across {bagItems.length} items - saved as lot on continue
+              {totalWeight.toFixed(2)} kg across {bagItems.length} items - saved as lot on continue
             </p>
           )}
         </Card>
